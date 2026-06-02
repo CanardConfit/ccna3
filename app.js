@@ -1,7 +1,7 @@
 // 'quizData' is available globally from quiz_data.js
 
 // ========== PERSISTENCE ==========
-const STORAGE_KEY = 'ccna2_quiz_stats';
+const STORAGE_KEY = 'ccna3_quiz_stats';
 
 function loadStats() {
     try {

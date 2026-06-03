@@ -179,7 +179,7 @@ const quizData = [
     },
     {
         "title": "15. Consider the following output for an ACL that has been applied to a router via the access-class in command. What can a network administrator determine from the output that is shown?",
-        "text": "Standard IP access list 2<br>10 permit 192.168.10.0, wildcard bits 0.0.0.255 (2 matches)<br>20 deny any (1 match)",
+        "text": "<pre><code>R1#\nStandard IP access list 2\n10 permit 192.168.10.0, wildcard bits 0.0.0.255 (2 matches)\n20 deny any (1 match)</code></pre>",
         "images": [],
         "options": [
             "Two devices connected to the router have IP addresses of 192.168.10.x.",
@@ -619,7 +619,7 @@ const quizData = [
     },
     {
         "title": "51. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 172.18.20.14, a destination address of 172.18.20.40, and a protocol of 21 is received on the interface, is the packet permitted or denied?",
-        "text": "access-list 210 permit tcp 172.18.20.0 0.0.0.31 172.18.20.32 0.0.0.31 eq ftp",
+        "text": "<pre><code>access-list 210 permit tcp 172.18.20.0 0.0.0.31 172.18.20.32 0.0.0.31 eq ftp</code></pre>",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [0],
@@ -680,7 +680,7 @@ const quizData = [
     },
     {
         "title": "56. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 192.168.101.45, a destination address of 64.100.40.4, and a protocol of 23 is received on the interface, is the packet permitted or denied?",
-        "text": "Case 1: <br> access-list 101 permit udp 192.168.100.0 0.0.2.255 64.100.40.0 0.0.0.15 eq telnet",
+        "text": "Case 1: <br> <pre><code>access-list 101 permit udp 192.168.100.0 0.0.2.255 64.100.40.0 0.0.0.15 eq telnet</pre></code>",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [1],
@@ -689,7 +689,7 @@ const quizData = [
     },
     {
         "title": "56. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 192.168.100.219, a destination address of 64.100.40.10, and a protocol of 54 is received on the interface, is the packet permitted or denied?",
-        "text": "Case 2: <br> access-list 101 permit udp 192.168.100.0 0.0.2.255 64.100.40.0 0.0.0.15 eq telnet",
+        "text": "Case 2: <br> <pre><code>access-list 101 permit udp 192.168.100.0 0.0.2.255 64.100.40.0 0.0.0.15 eq telnet</pre></code>",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [1],
@@ -909,7 +909,7 @@ const quizData = [
     },
     {
         "title": "74. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 10.1.1.201, a destination address of 192.31.7.45, and a protocol of 23 is received on the interface, is the packet permitted or denied?",
-        "text": "access-list 101 permit tcp 10.1.1.0 0.0.0.255 host 192.31.7.45 eq dns",
+        "text": "<pre><code>access-list 101 permit tcp 10.1.1.0 0.0.0.255 host 192.31.7.45 eq dns</pre></code>",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [1],
@@ -978,7 +978,7 @@ const quizData = [
     },
     {
         "title": "81. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 10.1.3.8, a destination address of 10.10.3.8, and a protocol of 53 is received on the interface, is the packet permitted or denied?",
-        "text": "access-list 101 permit tcp 10.1.1.0 0.0.0.255 host 10.1.3.8 eq dns",
+        "text": "<pre><code>access-list 101 permit tcp 10.1.1.0 0.0.0.255 host 10.1.3.8 eq dns</pre></code>",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [1],
@@ -1010,7 +1010,7 @@ const quizData = [
     },
     {
         "title": "84. Refer to the exhibit. An administrator first configured an extended ACL as shown by the output of the show access-lists command, then edited it with: no 20 / 5 permit tcp any any eq 22 / 20 deny udp any any. Which two conclusions can be drawn from this new configuration? (Choose two.)",
-        "text": "Router(config)# ip access-list extended 101<br>Router(config-ext-nacl)# no 20<br>Router(config-ext-nacl)# 5 permit tcp any any eq 22<br>Router(config-ext-nacl)# 20 deny udp any any",
+        "text": "<pre><code>Router(config)# ip access-list extended 101\nRouter(config-ext-nacl)# no 20\nRouter(config-ext-nacl)# 5 permit tcp any any eq 22\nRouter(config-ext-nacl)# 20 deny udp any any</pre></code>",
         "images": ["https://itexamanswers.net/wp-content/uploads/2019/12/i241882v4n1_241882.png"],
         "options": [
             "TFTP packets will be permitted.",
@@ -1201,7 +1201,7 @@ const quizData = [
     },
     {
         "title": "99. Refer to the exhibit. An administrator configures an ACL to prevent devices on the 192.168.1.0 subnet from accessing the server at 10.1.1.5 (access-list 100 deny ip 192.168.1.0 0.0.0.255 host 10.1.1.5 / permit ip any any). Where should the administrator place this ACL for the most efficient use of network resources?",
-        "text": "access-list 100 deny ip 192.168.1.0 0.0.0.255 host 10.1.1.5 <br>access-list 100 permit ip any any",
+        "text": "<pre><code>access-list 100 deny ip 192.168.1.0 0.0.0.255 host 10.1.1.5 \naccess-list 100 permit ip any any</pre></code>",
         "images": ["https://itexamanswers.net/wp-content/uploads/2020/01/2020-06-13_113133.jpg"],
         "options": [
             "inbound on router A Fa0/0",
@@ -1647,7 +1647,7 @@ const quizData = [
     },
     {
         "title": "135. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 198.133.219.100, a destination address of 198.133.219.170, and a protocol of 23 is received on the interface, is the packet permitted or denied?",
-        "text": "access-list 101 permit udp 192.168.100.32 0.0.0.7 host 198.133.219.76 eq telnet",
+        "text": "<pre><code>access-list 101 permit udp 192.168.100.32 0.0.0.7 host 198.133.219.76 eq telnet</pre></code>",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [1],
@@ -1706,7 +1706,7 @@ const quizData = [
     },
     {
         "title": "142. Consider the following access list that allows IP phone configuration file transfers from a particular host to a TFTP server. Which method would allow the network administrator to modify the ACL and include FTP transfers from any source IP address?",
-        "text": "R1(config)# access-list 105 permit udp host 10.0.70.23 host 10.0.54.5 range 1024 5000<br>R1(config)# access-list 105 deny ip any any<br>R1(config)# interface gi0/0<br>R1(config-if)# ip access-group 105 out",
+        "text": "<pre><code>R1(config)# access-list 105 permit udp host 10.0.70.23 host 10.0.54.5 range 1024 5000\nR1(config)# access-list 105 deny ip any any\nR1(config)# interface gi0/0\nR1(config-if)# ip access-group 105 out</pre></code>",
         "images": [],
         "options": [
             "R1(config)# interface gi0/0<br>R1(config-if)# no ip access-group 105 out<br>R1(config)# access-list 105 permit tcp any host 10.0.54.5 eq 20<br>R1(config)# access-list 105 permit tcp any host 10.0.54.5 eq 21<br>R1(config)# interface gi0/0<br>R1(config-if)# ip access-group 105 out",
@@ -1838,7 +1838,7 @@ const quizData = [
     },
     {
         "title": "153. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 192.168.10.244, a destination address of 172.17.200.56, and a protocol of 80 is received on the interface, is the packet permitted or denied?",
-        "text": "access-list 100 permit tcp 192.168.10.0 0.0.0.255 172.17.200.0 0.0.0.255 eq www",
+        "text": "<pre><code>access-list 100 permit tcp 192.168.10.0 0.0.0.255 172.17.200.0 0.0.0.255 eq www</pre></code>",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [0],
@@ -2239,7 +2239,7 @@ const quizData = [
     },
     {
         "title": "188. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 172.18.20.40, a destination address of 10.33.19.2, and a protocol of 21 is received on the interface, is the packet permitted or denied?",
-        "text": "access-list 210 permit tcp 172.18.20.0 0.0.0.47 any eq ftp",
+        "text": "<pre><code>access-list 210 permit tcp 172.18.20.0 0.0.0.47 any eq ftp</pre></code>",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [0],
@@ -2362,7 +2362,7 @@ const quizData = [
     },
     {
         "title": "199. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 172.18.20.55, a destination address of 172.18.20.3, and a protocol of 21 is received on the interface, is the packet permitted or denied?",
-        "text": "access-list 210 permit tcp 172.18.20.0 0.0.0.31 172.18.20.32 0.0.0.31 eq ftp",
+        "text": "<pre><code>access-list 210 permit tcp 172.18.20.0 0.0.0.31 172.18.20.32 0.0.0.31 eq ftp</pre></code>",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [1],

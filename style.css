@@ -434,4 +434,22 @@ body {
     .match-column-right .match-item {
         border-left: 4px solid #9b59b6;
     }
+
+    pre {
+        background: #1e1e1e;
+        color: #e6e6e6;
+        padding: 12px 14px;
+        border-radius: 6px;
+        overflow-x: auto;
+        /* horizontal scroll for long ACLs */
+        font-family: ui-monospace, "Courier New", monospace;
+        font-size: 0.9em;
+        white-space: pre;
+        line-height: 1.5;
+    }
+
+    code {
+        background-color: #3498db;
+        color: #155724;
+    }
 }

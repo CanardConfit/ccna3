@@ -680,7 +680,7 @@ const quizData = [
     },
     {
         "title": "56. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 192.168.101.45, a destination address of 64.100.40.4, and a protocol of 23 is received on the interface, is the packet permitted or denied?",
-        "text": "Case 1: access-list 101 permit udp 192.168.100.0 0.0.2.255 64.100.40.0 0.0.0.15 eq telnet",
+        "text": "Case 1: <br> access-list 101 permit udp 192.168.100.0 0.0.2.255 64.100.40.0 0.0.0.15 eq telnet",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [1],
@@ -689,7 +689,7 @@ const quizData = [
     },
     {
         "title": "56. An ACL is applied inbound on a router interface. The ACL consists of a single entry. If a packet with a source address of 192.168.100.219, a destination address of 64.100.40.10, and a protocol of 54 is received on the interface, is the packet permitted or denied?",
-        "text": "Case 2: access-list 101 permit udp 192.168.100.0 0.0.2.255 64.100.40.0 0.0.0.15 eq telnet",
+        "text": "Case 2: <br> access-list 101 permit udp 192.168.100.0 0.0.2.255 64.100.40.0 0.0.0.15 eq telnet",
         "images": [],
         "options": ["permitted", "denied"],
         "correct": [1],

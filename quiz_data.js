@@ -451,7 +451,7 @@ const quizData = [
             { "left": "DTE", "right": "customer devices that pass the data from a customer network for transmission over the WAN" },
             { "left": "local loop", "right": "a physical connection from the customer to the service provider POP" }
         ],
-        "distractors": [],
+        "distractors": ["service provider facility taht connects the CPE to the provider network", "location where the responsibility for the connection changes from the customer to the service provider"],
         "explanation": "CPE is on the enterprise edge, DCE provides the WAN cloud interface, DTE passes customer data, and the local loop physically connects the customer to the provider POP.",
         "id": 37
     },
@@ -928,7 +928,7 @@ const quizData = [
     {
         "title": "76. Refer to the exhibit. Which data format is used to represent the data for network automation applications?",
         "text": "",
-        "images": ["https://itexamanswers.net/wp-content/uploads/2020/01/i349058v2n1_347058.png"],
+        "images": ["https://itexamanswers.net/wp-content/uploads/2019/12/i349058v2n1_347058.png"],
         "options": ["XML", "YAML", "HTML", "JSON"],
         "correct": [3],
         "explanation": "JSON encloses key/value pairs in braces { } with keys in double quotes and a colon separating keys from values.",
@@ -1010,7 +1010,7 @@ const quizData = [
     },
     {
         "title": "84. Refer to the exhibit. An administrator first configured an extended ACL as shown by the output of the show access-lists command, then edited it with: no 20 / 5 permit tcp any any eq 22 / 20 deny udp any any. Which two conclusions can be drawn from this new configuration? (Choose two.)",
-        "text": "",
+        "text": "Router(config)# ip access-list extended 101<br>Router(config-ext-nacl)# no 20<br>Router(config-ext-nacl)# 5 permit tcp any any eq 22<br>Router(config-ext-nacl)# 20 deny udp any any",
         "images": ["https://itexamanswers.net/wp-content/uploads/2019/12/i241882v4n1_241882.png"],
         "options": [
             "TFTP packets will be permitted.",
@@ -1201,7 +1201,7 @@ const quizData = [
     },
     {
         "title": "99. Refer to the exhibit. An administrator configures an ACL to prevent devices on the 192.168.1.0 subnet from accessing the server at 10.1.1.5 (access-list 100 deny ip 192.168.1.0 0.0.0.255 host 10.1.1.5 / permit ip any any). Where should the administrator place this ACL for the most efficient use of network resources?",
-        "text": "",
+        "text": "access-list 100 deny ip 192.168.1.0 0.0.0.255 host 10.1.1.5 <br>access-list 100 permit ip any any",
         "images": ["https://itexamanswers.net/wp-content/uploads/2020/01/2020-06-13_113133.jpg"],
         "options": [
             "inbound on router A Fa0/0",
@@ -1257,7 +1257,7 @@ const quizData = [
     {
         "title": "104. Refer to the exhibit. Which sequence of commands should be used to configure router A for OSPF?",
         "text": "",
-        "images": ["https://itexamanswers.net/wp-content/uploads/2020/01/i386046n1v2-1613220070.9736.gif"],
+        "images": ["https://itexamanswers.net/wp-content/uploads/2021/02/i386046n1v2-1613220070.9736.gif"],
         "options": [
             "router ospf 1<br>network 192.168.10.0 area 0",
             "router ospf 1<br>network 192.168.10.0",
@@ -1307,18 +1307,31 @@ const quizData = [
     },
     {
         "title": "107. How does virtualization help with disaster recovery within a data center?",
-        "text": "",
+        "text": "Case 1",
         "images": [],
         "options": [
             "Hardware does not have to be identical.",
+            "Power is always provided.",
+            "Less energy is consumed.",
+            "Server provisioning is faster."
+        ],
+        "correct": [0],
+        "explanation": "Virtualization provides hardware independence, so the disaster recovery site does not need the exact equipment used in production. (Both phrasings appear as the marked correct answer.)",
+        "id": 110
+    },
+    {
+        "title": "107. How does virtualization help with disaster recovery within a data center?",
+        "text": "Case 2",
+        "images": [],
+        "options": [
             "Hardware at the recovery site does not have to be identical to production equipment.",
             "Power is always provided.",
             "Less energy is consumed.",
             "Server provisioning is faster."
         ],
-        "correct": [0, 1],
+        "correct": [0],
         "explanation": "Virtualization provides hardware independence, so the disaster recovery site does not need the exact equipment used in production. (Both phrasings appear as the marked correct answer.)",
-        "id": 110
+        "id": 216
     },
     {
         "title": "108. Refer to the exhibit. Which devices exist in the failure domain when switch S3 loses power?",
@@ -1732,7 +1745,7 @@ const quizData = [
             { "left": "Uniform Resource Identifier (URI)", "right": "http://www.buycarsfromus.com/2020models/ford/suv.html#Escape" },
             { "left": "fragment", "right": "#Escape" }
         ],
-        "distractors": [],
+        "distractors_left": ["page information"],
         "explanation": "The protocol is http, the URN is the name portion, the URL adds the protocol, the URI is the complete identifier including the fragment, and the fragment is #Escape.",
         "id": 146
     },
@@ -1979,14 +1992,14 @@ const quizData = [
         "title": "166. Match the functions to the corresponding layers. (Not all options are used.)",
         "text": "",
         "pairs": [
-            { "left": "access layer", "right": "provides network access to the user" },
-            { "left": "access layer", "right": "represents the network edge" },
-            { "left": "distribution layer", "right": "implements network access policy" },
-            { "left": "distribution layer", "right": "establishes Layer 3 routing boundaries" },
-            { "left": "core layer", "right": "provides high-speed backbone connectivity" },
-            { "left": "core layer", "right": "functions as an aggregator for all the campus blocks" }
+            { "left": "provides network access to the user", "right": "access layer" },
+            { "left": "represents the network edge", "right": "access layer" },
+            { "left": "implements network access policy", "right": "distribution layer" },
+            { "left": "establishes Layer 3 routing boundaries", "right": "distribution layer" },
+            { "left": "provides high-speed backbone connectivity", "right": "core layer" },
+            { "left": "functions as an aggregator for all the campus blocks", "right": "core layer" }
         ],
-        "distractors": [],
+        "distractors_left": ["implements personal firewalls on the client computers"],
         "explanation": "The access layer connects users at the network edge, the distribution layer implements policy and Layer 3 boundaries, and the core layer provides high-speed backbone connectivity and aggregation.",
         "id": 168
     },
@@ -2272,16 +2285,30 @@ const quizData = [
     {
         "type": "matching",
         "title": "193. Match each component of a WAN connection to its description. (Not all options are used.)",
-        "text": "",
+        "text": "Case 1",
         "pairs": [
-            { "left": "CPE", "right": "devices and inside wiring located on the enterprise edge that connect to a carrier link" },
-            { "left": "DCE", "right": "devices that provide an interface for customers to connect to within the WAN cloud" },
-            { "left": "DTE", "right": "customer devices that pass data from a customer network for transmission over the WAN" },
-            { "left": "local loop", "right": "a physical connection from the customer to the service provider POP" }
+            { "left": "Customer premises equipement", "right": "devices and inside wiring located on the enterprise edge and which connect to a carrier link" },
+            { "left": "Data communications equipment", "right": "devices that put data on the local loop" },
+            { "left": "Data Terminal Equipement", "right": "customer devices that pass data from a customer network or host computer for transmission over the WAN" },
+            { "left": "Demarcation point", "right": "a point that is established in a building or complex to separate customer equipment from service provider equipement" }
         ],
-        "distractors": [],
+        "distractors": ["the point of presence that is the local service provider facility or building that connects the CPE to the provider network"],
         "explanation": "WAN components: CPE on the enterprise edge, DCE provides the WAN cloud interface, DTE passes customer data, and the local loop connects the customer to the provider POP. (Reconstructed from Topic 7.2.3; verify against the original image.)",
         "id": 195
+    },
+    {
+        "type": "matching",
+        "title": "193. Match each component of a WAN connection to its description. (Not all options are used.)",
+        "text": "Case 2",
+        "pairs": [
+            { "left": "Data communications equipment", "right": "device that is used to communicate with the provider" },
+            { "left": "Customer premises equipement", "right": "devices and inside wiring located on the enterprise edge owner or leased from service provider" },
+            { "left": "Demarcation point", "right": "a point that is established in a building or complex to separate customer equipment from service provider equipment" },
+            { "left": "Data Terminal Equipement", "right": "device that connects LANs to the WAN communication device" },
+        ],
+        "distractors": ["the point of presence that is the local service provider facility or building that connects the CPE to the provider network"],
+        "explanation": "WAN components: CPE on the enterprise edge, DCE provides the WAN cloud interface, DTE passes customer data, and the local loop connects the customer to the provider POP. (Reconstructed from Topic 7.2.3; verify against the original image.)",
+        "id": 215
     },
     {
         "title": "194. What type of traffic is described as being able to tolerate a certain amount of latency, jitter, and loss without any noticeable effects?",

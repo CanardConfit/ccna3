@@ -1,7 +1,82 @@
-// 'quizData' is available globally from quiz_data.js
+// 'quizData' is available globally from quiz_data_fr.js
 
 // ========== PERSISTENCE ==========
 const STORAGE_KEY = 'ccna3_quiz_stats';
+const DEFAULT_LANGUAGE_KEY = 'ccna3_quiz_default_language';
+const labels = {
+    en: {
+        checkAnswer: 'Check Answer',
+        explanation: 'Explanation:',
+        matchItems: '(Match items)',
+        noExplanation: 'No explanation provided.',
+        selectAnswer: 'Please select an answer.',
+        selectCount: count => `(Select ${count})`,
+        language: 'FR'
+    },
+    fr: {
+        checkAnswer: 'Vérifier la réponse',
+        explanation: 'Explication :',
+        matchItems: '(Associer les éléments)',
+        noExplanation: 'Aucune explication fournie.',
+        selectAnswer: 'Veuillez sélectionner une réponse.',
+        selectCount: count => `(Sélection ${count})`,
+        language: 'EN'
+    }
+};
+
+let defaultLanguage = localStorage.getItem(DEFAULT_LANGUAGE_KEY) || 'fr';
+const questionLanguageOverrides = {};
+
+function getQuestionLocale(q, lang) {
+    return q.i18n?.[lang] || null;
+}
+
+function getField(q, field, lang) {
+    const localized = getQuestionLocale(q, lang);
+    if (localized?.[field] !== undefined) return localized[field];
+    return q[field] || '';
+}
+
+function getOptionText(q, originalIndex, lang) {
+    const localized = getQuestionLocale(q, lang);
+    if (localized?.options?.[originalIndex] !== undefined) {
+        return localized.options[originalIndex];
+    }
+    return q.options[originalIndex] || '';
+}
+
+function getPairSideText(q, pairIndex, side, lang) {
+    const localized = getQuestionLocale(q, lang);
+    if (localized?.pairs?.[pairIndex]?.[side] !== undefined) {
+        return localized.pairs[pairIndex][side];
+    }
+    return q.pairs[pairIndex]?.[side] || '';
+}
+
+function getRightText(q, rootRight, lang) {
+    const pairIndex = q.pairs.findIndex(p => p.right === rootRight);
+    if (pairIndex >= 0) return getPairSideText(q, pairIndex, 'right', lang);
+    return rootRight;
+}
+
+function getDistractorText(q, side, index, rootText, lang) {
+    const localized = getQuestionLocale(q, lang);
+    const key = side === 'left' ? 'distractors_left' : 'distractors_right';
+    const fallbackKey = side === 'right' ? 'distractors' : key;
+
+    if (localized?.[key]?.[index] !== undefined) return localized[key][index];
+    if (localized?.[fallbackKey]?.[index] !== undefined) return localized[fallbackKey][index];
+
+    return rootText;
+}
+
+function getQuestionLanguage(qIndex) {
+    return questionLanguageOverrides[qIndex] || defaultLanguage;
+}
+
+function getLabel(lang, key) {
+    return labels[lang]?.[key] || labels.en[key];
+}
 
 function loadStats() {
     try {
@@ -98,6 +173,7 @@ const elCorrect = document.getElementById('score-correct');
 const elWrong = document.getElementById('score-wrong');
 const elRemaining = document.getElementById('score-remaining');
 const elPercentage = document.getElementById('score-percentage');
+const elAnsweredPercentage = document.getElementById('score-answered-percentage');
 const elProgress = document.getElementById('progress-fill');
 
 // Fisher-Yates shuffle
@@ -136,6 +212,13 @@ function renderControls() {
                 <select id="sort-select" onchange="changeSort(this.value)">
                     <option value="default">Random</option>
                     <option value="success-rate">Success Rate (Low→High)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Language:</label>
+                <select id="language-select" onchange="changeDefaultLanguage(this.value)">
+                    <option value="fr" ${defaultLanguage === 'fr' ? 'selected' : ''}>Français</option>
+                    <option value="en" ${defaultLanguage === 'en' ? 'selected' : ''}>English</option>
                 </select>
             </div>
             <button class="btn-reset" onclick="resetStats()">Reset All Stats</button>
@@ -183,6 +266,17 @@ window.changeSort = function(value) {
     reloadQuiz();
 };
 
+window.changeDefaultLanguage = function(value) {
+    defaultLanguage = value;
+    localStorage.setItem(DEFAULT_LANGUAGE_KEY, value);
+
+    Object.keys(questionLanguageOverrides).forEach(key => {
+        delete questionLanguageOverrides[key];
+    });
+
+    reloadQuiz();
+};
+
 window.resetStats = function() {
     if (confirm('Are you sure you want to reset all statistics? This cannot be undone.')) {
         localStorage.removeItem(STORAGE_KEY);
@@ -212,14 +306,19 @@ function updateScoreboard() {
     const percentage = sessionStats.total > 0 ? (sessionStats.answered / sessionStats.total) * 100 : 0;
     elProgress.style.width = `${percentage}%`;
     
-    // Calculate correct percentage based on total questions (unanswered = wrong)
-    if (sessionStats.total > 0) {
-        const correctPct = Math.round((sessionStats.correct / sessionStats.total) * 100);
-        elPercentage.textContent = `${correctPct}%`;
-        elPercentage.className = correctPct >= 70 ? 'pct-good' : 'pct-bad';
+    // Score total: correct answers divided by all questions in the current filter.
+    const totalPct = sessionStats.total > 0 ? Math.round((sessionStats.correct / sessionStats.total) * 100) : 0;
+    elPercentage.textContent = `${totalPct}%`;
+    elPercentage.className = totalPct >= 70 ? 'pct-good' : 'pct-bad';
+
+    // Success rate only on answered questions.
+    if (sessionStats.answered > 0) {
+        const answeredPct = Math.round((sessionStats.correct / sessionStats.answered) * 100);
+        elAnsweredPercentage.textContent = `${answeredPct}%`;
+        elAnsweredPercentage.className = answeredPct >= 70 ? 'pct-good' : 'pct-bad';
     } else {
-        elPercentage.textContent = '0%';
-        elPercentage.className = 'pct-bad';
+        elAnsweredPercentage.textContent = '0%';
+        elAnsweredPercentage.className = 'pct-bad';
     }
 }
 
@@ -260,13 +359,15 @@ function getStatsHtml(questionId) {
 
 // ========== MULTIPLE CHOICE RENDERER ==========
 function renderMultipleChoice(card, q, index) {
+    const lang = getQuestionLanguage(index);
     const correctCount = q.correct.length;
     const isMulti = correctCount > 1;
     const inputType = isMulti ? 'multi' : 'single';
-    const typeText = isMulti ? `(Select ${correctCount})` : '(Select 1)';
+    const typeText = getLabel(lang, 'selectCount')(correctCount);
 
     const optionsWithMeta = q.options.map((opt, i) => ({
         text: opt,
+        originalIndex: i,
         wasCorrect: q.correct.includes(i)
     }));
     const shuffledOptions = shuffle(optionsWithMeta);
@@ -283,35 +384,38 @@ function renderMultipleChoice(card, q, index) {
 
     let optionsHtml = '';
     shuffledOptions.forEach((opt, optIndex) => {
-        const safeOpt = opt.text.replace(/"/g, '&quot;');
-        optionsHtml += `<li class="option" data-idx="${optIndex}" onclick="selectOption(this)">${safeOpt}</li>`;
+        optionsHtml += `<li class="option" data-idx="${optIndex}" data-original-index="${opt.originalIndex}" onclick="selectOption(this)">${getOptionText(q, opt.originalIndex, lang)}</li>`;
     });
 
+    card.dataset.lang = lang;
+    card.dataset.questionIndex = index;
     card.innerHTML = `
         <div class="q-header">
-            <span class="q-title">${q.title}</span>
+            <span class="q-title">${getField(q, 'title', lang)}</span>
             <div class="q-meta">
                 ${getStatsHtml(q.id)}
                 <span class="q-hint">${typeText}</span>
+                <button class="btn-lang" type="button" onclick="toggleQuestionLanguage(${index})">${getLabel(lang, 'language')}</button>
             </div>
         </div>
-        <div class="q-text">${q.text}</div>
+        <div class="q-text">${getField(q, 'text', lang)}</div>
         ${imagesHtml}
         
         <ul class="options" id="opt-list-${index}" data-type="${inputType}" data-correct="${JSON.stringify(newCorrectIndices)}">
             ${optionsHtml}
         </ul>
         
-        <button class="btn-check" onclick="checkAnswer(${index})">Check Answer</button>
+        <button class="btn-check" onclick="checkAnswer(${index})">${getLabel(lang, 'checkAnswer')}</button>
         <div class="explanation" id="exp-${index}">
-            <strong>Explanation:</strong><br>
-            ${q.explanation || "No explanation provided."}
+            <strong>${getLabel(lang, 'explanation')}</strong><br>
+            ${getField(q, 'explanation', lang) || getLabel(lang, 'noExplanation')}
         </div>
     `;
 }
 
 // ========== MATCHING QUESTION RENDERER ==========
 function renderMatchingQuestion(card, q, index) {
+    const lang = getQuestionLanguage(index);
     const shuffledLeft = shuffle(q.pairs.map((p, i) => ({ text: p.left, originalIndex: i, correctRight: p.right })));
     
     // Get unique right values only
@@ -320,8 +424,8 @@ function renderMatchingQuestion(card, q, index) {
     
     const rightDistractors = q.distractors_right || q.distractors || [];
     if (rightDistractors.length > 0) {
-        rightDistractors.forEach(d => {
-            shuffledRight.push({ text: d, originalIndex: -1 });
+        rightDistractors.forEach((d, distractorIndex) => {
+            shuffledRight.push({ text: d, originalIndex: -1, distractorIndex });
         });
         const reshuffledRight = shuffle(shuffledRight);
         shuffledRight.length = 0;
@@ -330,8 +434,8 @@ function renderMatchingQuestion(card, q, index) {
     
     const leftDistractors = q.distractors_left || [];
     if (leftDistractors.length > 0) {
-        leftDistractors.forEach(d => {
-            shuffledLeft.push({ text: d, originalIndex: -2, correctRight: null });
+        leftDistractors.forEach((d, distractorIndex) => {
+            shuffledLeft.push({ text: d, originalIndex: -2, correctRight: null, distractorIndex });
         });
         const reshuffledLeft = shuffle(shuffledLeft);
         shuffledLeft.length = 0;
@@ -354,24 +458,29 @@ function renderMatchingQuestion(card, q, index) {
     let leftHtml = '';
     shuffledLeft.forEach((item, idx) => {
         const isDistractor = item.originalIndex === -2;
-        leftHtml += `<div class="match-item match-left ${isDistractor ? 'is-distractor' : ''}" data-idx="${idx}" data-distractor="${isDistractor}" onclick="selectMatchLeft(this, ${index})">${item.text}</div>`;
+        const displayText = isDistractor ? getDistractorText(q, 'left', item.distractorIndex ?? idx, item.text, lang) : getPairSideText(q, item.originalIndex, 'left', lang);
+        leftHtml += `<div class="match-item match-left ${isDistractor ? 'is-distractor' : ''}" data-idx="${idx}" data-original-index="${item.originalIndex}" data-distractor-index="${item.distractorIndex ?? ''}" data-english-text="${item.text.replace(/"/g, '&quot;')}" data-distractor="${isDistractor}" onclick="selectMatchLeft(this, ${index})">${displayText}</div>`;
     });
 
     let rightHtml = '';
     shuffledRight.forEach((item, idx) => {
         const isDistractor = item.originalIndex === -1;
-        rightHtml += `<div class="match-item match-right ${isDistractor ? 'is-distractor' : ''}" data-idx="${idx}" data-distractor="${isDistractor}" onclick="selectMatchRight(this, ${index})">${item.text}</div>`;
+        const displayText = isDistractor ? getDistractorText(q, 'right', item.distractorIndex ?? idx, item.text, lang) : getRightText(q, item.text, lang);
+        rightHtml += `<div class="match-item match-right ${isDistractor ? 'is-distractor' : ''}" data-idx="${idx}" data-distractor-index="${item.distractorIndex ?? ''}" data-english-text="${item.text.replace(/"/g, '&quot;')}" data-distractor="${isDistractor}" onclick="selectMatchRight(this, ${index})">${displayText}</div>`;
     });
 
+    card.dataset.lang = lang;
+    card.dataset.questionIndex = index;
     card.innerHTML = `
         <div class="q-header">
-            <span class="q-title">${q.title}</span>
+            <span class="q-title">${getField(q, 'title', lang)}</span>
             <div class="q-meta">
                 ${getStatsHtml(q.id)}
-                <span class="q-hint">(Match items)</span>
+                <span class="q-hint">${getLabel(lang, 'matchItems')}</span>
+                <button class="btn-lang" type="button" onclick="toggleQuestionLanguage(${index})">${getLabel(lang, 'language')}</button>
             </div>
         </div>
-        <div class="q-text">${q.text || ''}</div>
+        <div class="q-text">${getField(q, 'text', lang)}</div>
         
         <div class="match-container" id="match-${index}" data-correct='${JSON.stringify(correctMapping)}' data-left-distractors='${JSON.stringify(leftDistractorIndices)}'>
             <div class="match-column match-column-left">
@@ -385,16 +494,69 @@ function renderMatchingQuestion(card, q, index) {
         
         <div class="match-status" id="status-${index}"></div>
         
-        <button class="btn-check" onclick="checkMatchAnswer(${index})">Check Answer</button>
+        <button class="btn-check" onclick="checkMatchAnswer(${index})">${getLabel(lang, 'checkAnswer')}</button>
         <div class="explanation" id="exp-${index}">
-            <strong>Explanation:</strong><br>
-            ${q.explanation || "No explanation provided."}
+            <strong>${getLabel(lang, 'explanation')}</strong><br>
+            ${getField(q, 'explanation', lang) || getLabel(lang, 'noExplanation')}
         </div>
     `;
 
     card.dataset.userMatches = JSON.stringify({});
     card.dataset.selectedLeft = '';
 }
+
+window.toggleQuestionLanguage = function(qIndex) {
+    const card = document.getElementById(`q-${qIndex}`);
+    if (!card) return;
+
+    const q = filteredQuiz[qIndex];
+    const nextLang = (card.dataset.lang || defaultLanguage) === 'en' ? 'fr' : 'en';
+    questionLanguageOverrides[qIndex] = nextLang;
+    card.dataset.lang = nextLang;
+
+    card.querySelector('.q-title').innerHTML = getField(q, 'title', nextLang);
+    card.querySelector('.q-text').innerHTML = getField(q, 'text', nextLang);
+    card.querySelector('.q-hint').textContent = q.type === 'matching'
+        ? getLabel(nextLang, 'matchItems')
+        : getLabel(nextLang, 'selectCount')(q.correct.length);
+    card.querySelector('.btn-lang').textContent = getLabel(nextLang, 'language');
+
+    const checkButton = card.querySelector('.btn-check');
+    if (checkButton) checkButton.textContent = getLabel(nextLang, 'checkAnswer');
+
+    const exp = document.getElementById(`exp-${qIndex}`);
+    if (exp) {
+        exp.innerHTML = `<strong>${getLabel(nextLang, 'explanation')}</strong><br>${getField(q, 'explanation', nextLang) || getLabel(nextLang, 'noExplanation')}`;
+    }
+
+    if (q.type === 'matching') {
+        card.querySelectorAll('.match-left').forEach(el => {
+            const originalIndex = parseInt(el.dataset.originalIndex, 10);
+            if (originalIndex >= 0) {
+                el.innerHTML = getPairSideText(q, originalIndex, 'left', nextLang);
+            } else {
+                const distractorIndex = parseInt(el.dataset.distractorIndex || el.dataset.idx, 10);
+                el.innerHTML = getDistractorText(q, 'left', distractorIndex, el.dataset.englishText, nextLang);
+            }
+        });
+
+        card.querySelectorAll('.match-right').forEach(el => {
+            if (el.dataset.distractor === 'true') {
+                const distractorIndex = parseInt(el.dataset.distractorIndex || el.dataset.idx, 10);
+                el.innerHTML = getDistractorText(q, 'right', distractorIndex, el.dataset.englishText, nextLang);
+            } else {
+                el.innerHTML = getRightText(q, el.dataset.englishText, nextLang);
+            }
+        });
+
+        drawLines(qIndex);
+    } else {
+        card.querySelectorAll('.option').forEach(el => {
+            const originalIndex = parseInt(el.dataset.originalIndex, 10);
+            el.innerHTML = getOptionText(q, originalIndex, nextLang);
+        });
+    }
+};
 
 // ========== MATCHING INTERACTION ==========
 let selectedLeft = {};
@@ -512,7 +674,7 @@ window.checkMatchAnswer = function(qIndex) {
     const matchedPairs = Object.keys(userMatches).length;
 
     if (matchedPairs < totalPairs) {
-        alert(`Please match all ${totalPairs} items.`);
+        alert((card.dataset.lang || defaultLanguage) === 'fr' ? `Veuillez associer les ${totalPairs} elements.` : `Please match all ${totalPairs} items.`);
         return;
     }
 
@@ -626,7 +788,7 @@ window.checkAnswer = function (index) {
     });
 
     if (selectedIndices.length === 0) {
-        alert("Please select an answer.");
+        alert(getLabel(card.dataset.lang || defaultLanguage, 'selectAnswer'));
         return;
     }
 

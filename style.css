@@ -64,6 +64,20 @@ body {
     outline: none;
 }
 
+.stats-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.stats-toggle input {
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
 .btn-reset {
     margin-left: auto;
     padding: 8px 16px;

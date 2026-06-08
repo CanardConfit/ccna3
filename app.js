@@ -3,6 +3,7 @@
 // ========== PERSISTENCE ==========
 const STORAGE_KEY = 'ccna3_quiz_stats';
 const DEFAULT_LANGUAGE_KEY = 'ccna3_quiz_default_language';
+const SCORE_SCOPE_KEY = 'ccna3_quiz_score_scope';
 const labels = {
     en: {
         checkAnswer: 'Check Answer',
@@ -81,10 +82,20 @@ function getLabel(lang, key) {
 function loadStats() {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        return saved ? JSON.parse(saved) : {};
+        const stats = saved ? JSON.parse(saved) : {};
+        return stats && typeof stats === 'object' ? stats : {};
     } catch (e) {
         return {};
     }
+}
+
+function normalizeStats(stats) {
+    const attempts = Number.isFinite(stats?.attempts) ? stats.attempts : 0;
+    const correct = Number.isFinite(stats?.correct) ? stats.correct : 0;
+    return {
+        attempts: Math.max(attempts, 0),
+        correct: Math.max(Math.min(correct, attempts), 0)
+    };
 }
 
 function saveStats(questionStats) {
@@ -93,14 +104,12 @@ function saveStats(questionStats) {
 
 function getQuestionStats(questionId) {
     const allStats = loadStats();
-    return allStats[questionId] || { attempts: 0, correct: 0 };
+    return normalizeStats(allStats[questionId]);
 }
 
 function recordAnswer(questionId, isCorrect) {
     const allStats = loadStats();
-    if (!allStats[questionId]) {
-        allStats[questionId] = { attempts: 0, correct: 0 };
-    }
+    allStats[questionId] = getQuestionStats(questionId);
     allStats[questionId].attempts++;
     if (isCorrect) {
         allStats[questionId].correct++;
@@ -167,6 +176,10 @@ let sessionStats = {
     total: 0,
     answered: 0
 };
+let scoreScope = localStorage.getItem(SCORE_SCOPE_KEY) || 'all';
+if (!['all', 'session'].includes(scoreScope)) {
+    scoreScope = 'all';
+}
 
 const container = document.getElementById('quiz-container');
 const elCorrect = document.getElementById('score-correct');
@@ -221,6 +234,10 @@ function renderControls() {
                     <option value="en" ${defaultLanguage === 'en' ? 'selected' : ''}>English</option>
                 </select>
             </div>
+            <label class="stats-toggle">
+                <input type="checkbox" onchange="changeScoreScope(this.checked)" ${scoreScope === 'session' ? 'checked' : ''}>
+                <span>Session stats</span>
+            </label>
             <button class="btn-reset" onclick="resetStats()">Reset All Stats</button>
         </div>
     `;
@@ -277,6 +294,12 @@ window.changeDefaultLanguage = function(value) {
     reloadQuiz();
 };
 
+window.changeScoreScope = function(showSessionStats) {
+    scoreScope = showSessionStats ? 'session' : 'all';
+    localStorage.setItem(SCORE_SCOPE_KEY, scoreScope);
+    updateScoreboard();
+};
+
 window.resetStats = function() {
     if (confirm('Are you sure you want to reset all statistics? This cannot be undone.')) {
         localStorage.removeItem(STORAGE_KEY);
@@ -298,22 +321,52 @@ function reloadQuiz() {
     renderQuestions();
 }
 
-function updateScoreboard() {
-    elCorrect.textContent = sessionStats.correct;
-    elWrong.textContent = sessionStats.wrong;
-    elRemaining.textContent = sessionStats.total - sessionStats.answered;
+function getAllAnsweredStats() {
+    const allStats = loadStats();
+    const stats = {
+        correct: 0,
+        wrong: 0,
+        total: quizData.length,
+        answered: 0,
+        mastered: 0
+    };
 
-    const percentage = sessionStats.total > 0 ? (sessionStats.answered / sessionStats.total) * 100 : 0;
+    quizData.forEach(q => {
+        const questionStats = allStats[q.id] || { attempts: 0, correct: 0 };
+        if (questionStats.attempts === 0) return;
+
+        stats.correct += questionStats.correct;
+        stats.wrong += questionStats.attempts - questionStats.correct;
+        stats.answered++;
+        if (questionStats.correct > 0) {
+            stats.mastered++;
+        }
+    });
+
+    return stats;
+}
+
+function updateScoreboard() {
+    const displayStats = scoreScope === 'session' ? sessionStats : getAllAnsweredStats();
+    const remaining = Math.max(displayStats.total - displayStats.answered, 0);
+    const attempts = displayStats.correct + displayStats.wrong;
+
+    elCorrect.textContent = displayStats.correct;
+    elWrong.textContent = displayStats.wrong;
+    elRemaining.textContent = remaining;
+
+    const percentage = displayStats.total > 0 ? (displayStats.answered / displayStats.total) * 100 : 0;
     elProgress.style.width = `${percentage}%`;
     
-    // Score total: correct answers divided by all questions in the current filter.
-    const totalPct = sessionStats.total > 0 ? Math.round((sessionStats.correct / sessionStats.total) * 100) : 0;
+    // Session score uses the active quiz list. Global score tracks questions solved at least once.
+    const totalCorrect = scoreScope === 'session' ? displayStats.correct : displayStats.mastered;
+    const totalPct = displayStats.total > 0 ? Math.round((totalCorrect / displayStats.total) * 100) : 0;
     elPercentage.textContent = `${totalPct}%`;
     elPercentage.className = totalPct >= 70 ? 'pct-good' : 'pct-bad';
 
-    // Success rate only on answered questions.
-    if (sessionStats.answered > 0) {
-        const answeredPct = Math.round((sessionStats.correct / sessionStats.answered) * 100);
+    // Success rate only on submitted answers.
+    if (attempts > 0) {
+        const answeredPct = Math.round((displayStats.correct / attempts) * 100);
         elAnsweredPercentage.textContent = `${answeredPct}%`;
         elAnsweredPercentage.className = answeredPct >= 70 ? 'pct-good' : 'pct-bad';
     } else {

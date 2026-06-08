@@ -78,15 +78,28 @@ body {
     cursor: pointer;
 }
 
+.btn-export,
 .btn-reset {
     margin-left: auto;
     padding: 8px 16px;
-    background: #b91c1c;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
+}
+
+.btn-export {
+    background: var(--accent-strong);
+}
+
+.btn-export:hover {
+    background: #0284c7;
+}
+
+.btn-reset {
+    margin-left: 0;
+    background: #b91c1c;
 }
 
 .btn-reset:hover {
@@ -487,6 +500,7 @@ code {
         flex: 1;
     }
 
+    .btn-export,
     .btn-reset {
         margin-left: 0;
         margin-top: 10px;

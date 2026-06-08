@@ -137,6 +137,8 @@ function applyFilterAndSort() {
         const rate = stats.attempts > 0 ? stats.correct / stats.attempts : -1;
         
         switch (currentFilter) {
+            case 'wrong':
+                return stats.attempts > stats.correct;
             case 'struggling':
                 return stats.attempts > 0 && rate < 0.5;
             case 'unanswered':
@@ -214,6 +216,7 @@ function renderControls() {
                 <label>Filter:</label>
                 <select id="filter-select" onchange="changeFilter(this.value)">
                     <option value="all">All (${quizData.length})</option>
+                    <option value="wrong">Wrong answers</option>
                     <option value="struggling">Struggling (&lt;50%)</option>
                     <option value="learning">Learning (50% - 74%)</option>
                     <option value="unanswered">Unanswered</option>
@@ -238,6 +241,7 @@ function renderControls() {
                 <input type="checkbox" onchange="changeScoreScope(this.checked)" ${scoreScope === 'session' ? 'checked' : ''}>
                 <span>Session stats</span>
             </label>
+            <button class="btn-export" onclick="exportDisplayedQuestions()">Export JSON</button>
             <button class="btn-reset" onclick="resetStats()">Reset All Stats</button>
         </div>
     `;
@@ -248,6 +252,7 @@ function renderControls() {
 function updateFilterCounts() {
     const allStats = loadStats();
     let countAll = quizData.length;
+    let countWrong = 0;
     let countStruggling = 0;
     let countLearning = 0;
     let countUnanswered = 0;
@@ -257,6 +262,7 @@ function updateFilterCounts() {
         const stats = allStats[q.id] || { attempts: 0, correct: 0 };
         const rate = stats.attempts > 0 ? stats.correct / stats.attempts : -1;
         
+        if (stats.attempts > stats.correct) countWrong++;
         if (stats.attempts === 0) countUnanswered++;
         else if (rate < 0.5) countStruggling++;
         else if (rate >= 0.75) countMastered++;
@@ -266,10 +272,11 @@ function updateFilterCounts() {
     const select = document.getElementById('filter-select');
     if (select) {
         select.options[0].text = `All (${countAll})`;
-        select.options[1].text = `Struggling <50% (${countStruggling})`;
-        select.options[2].text = `Learning 50-74% (${countLearning})`;
-        select.options[3].text = `Unanswered (${countUnanswered})`;
-        select.options[4].text = `Mastered ≥75% (${countMastered})`;
+        select.options[1].text = `Wrong answers (${countWrong})`;
+        select.options[2].text = `Struggling <50% (${countStruggling})`;
+        select.options[3].text = `Learning 50-74% (${countLearning})`;
+        select.options[4].text = `Unanswered (${countUnanswered})`;
+        select.options[5].text = `Mastered ≥75% (${countMastered})`;
     }
 }
 
@@ -305,6 +312,73 @@ window.resetStats = function() {
         localStorage.removeItem(STORAGE_KEY);
         reloadQuiz();
     }
+};
+
+function localizeQuestionForExport(q, lang) {
+    const stats = getQuestionStats(q.id);
+    const base = {
+        id: q.id,
+        type: q.type || 'multiple-choice',
+        title: getField(q, 'title', lang),
+        text: getField(q, 'text', lang),
+        images: Array.isArray(q.images) ? [...q.images] : [],
+        explanation: getField(q, 'explanation', lang),
+        stats: {
+            attempts: stats.attempts,
+            correct: stats.correct,
+            wrong: stats.attempts - stats.correct,
+            successRate: stats.attempts > 0 ? stats.correct / stats.attempts : null
+        }
+    };
+
+    if (q.type === 'matching') {
+        base.pairs = (q.pairs || []).map((pair, index) => ({
+            left: getPairSideText(q, index, 'left', lang),
+            right: getPairSideText(q, index, 'right', lang)
+        }));
+        base.distractorsLeft = (q.distractors_left || []).map((text, index) =>
+            getDistractorText(q, 'left', index, text, lang)
+        );
+        base.distractorsRight = (q.distractors_right || q.distractors || []).map((text, index) =>
+            getDistractorText(q, 'right', index, text, lang)
+        );
+        return base;
+    }
+
+    base.options = (q.options || []).map((option, index) => ({
+        index,
+        text: getOptionText(q, index, lang),
+        correct: (q.correct || []).includes(index)
+    }));
+    base.correct = [...(q.correct || [])];
+    base.correctAnswers = base.options
+        .filter(option => option.correct)
+        .map(option => option.text);
+
+    return base;
+}
+
+window.exportDisplayedQuestions = function() {
+    const questions = filteredQuiz.map(q => localizeQuestionForExport(q, defaultLanguage));
+    const payload = {
+        exportedAt: new Date().toISOString(),
+        language: defaultLanguage,
+        filter: currentFilter,
+        sort: currentSort,
+        count: questions.length,
+        questions
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `ccna3-questions-${defaultLanguage}-${currentFilter}-${date}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
 };
 
 function reloadQuiz() {
